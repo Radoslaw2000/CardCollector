@@ -26,7 +26,7 @@ namespace CardCollector.Controllers
             var user = new User
             {
                 Username = request.Username,
-                PasswordHash = BCrypt.Net.BCrypt.HashPassword(request.PasswordHash)
+                Password = BCrypt.Net.BCrypt.HashPassword(request.Password)
             };
 
             _context.Users.Add(user);
@@ -38,15 +38,14 @@ namespace CardCollector.Controllers
         public IActionResult Login([FromBody] User request)
         {
             var user = _context.Users.FirstOrDefault(u => u.Username == request.Username);
-            if (request == null)
+            if (user == null)
                 return BadRequest("User does not exist");
-            if (!BCrypt.Net.BCrypt.Verify(request.PasswordHash, user!.PasswordHash))
+            if (!BCrypt.Net.BCrypt.Verify(request.Password, user!.Password))
                 return Unauthorized("Wrong username or password");
 
-            user.AccessToken = Guid.NewGuid();
             _context.SaveChanges();
-
-            return Ok(new {userId = user.UserId, accesToken = user.AccessToken});
+            // TODO: jwt token
+            return Ok(new {userId = user.UserId, accesToken = Guid.NewGuid() });
         }
 
     }
