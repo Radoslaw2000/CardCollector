@@ -1,52 +1,48 @@
-﻿using BCrypt.Net;
-using CardCollector.Data;
-using CardCollector.Models;
-using Microsoft.AspNetCore.Http;
+﻿using CardCollector.DTOs.Auth;
+using CardCollector.Services;
+using CardCollector.Services.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace CardCollector.Controllers
 {
     [Route("api/[controller]")]
-    [ApiController]
     public class AuthController : ControllerBase
     {
-        private readonly ApplicationDbContext _context;
+        private readonly IAuthService _authService;
 
-        public AuthController(ApplicationDbContext context)
+        public AuthController(IAuthService authService)
         {
-            _context = context;
+            _authService = authService;
         }
 
         [HttpPost("register")]
-        public IActionResult Register([FromBody] User request)
+        public IActionResult Register([FromBody] RegisterRequestDto request)
         {
-            if (_context.Users.Any(u => u.Username == request.Username))
-                return BadRequest("Username already exists");
-
-            var user = new User
+            try
             {
-                Username = request.Username,
-                Password = BCrypt.Net.BCrypt.HashPassword(request.Password)
-            };
-
-            _context.Users.Add(user);
-            _context.SaveChanges();
-            return Ok("Registered");
+                var user = _authService.Register(request);
+                return Ok(new { message = "User registered successfully", userId = user.UserId });
+            }
+            catch (InvalidOperationException ex)
+            {
+                return BadRequest(new { error = "xdddddddddd" + ex.Message });
+            }
         }
 
         [HttpPost("login")]
-        public IActionResult Login([FromBody] User request)
+        [AllowAnonymous]
+        public IActionResult Login([FromBody] LoginRequestDto request)
         {
-            var user = _context.Users.FirstOrDefault(u => u.Username == request.Username);
-            if (user == null)
-                return BadRequest("User does not exist");
-            if (!BCrypt.Net.BCrypt.Verify(request.Password, user!.Password))
-                return Unauthorized("Wrong username or password");
-
-            _context.SaveChanges();
-            // TODO: jwt token
-            return Ok(new {userId = user.UserId, accesToken = Guid.NewGuid() });
+            try
+            {
+                var response = _authService.Login(request);
+                return Ok(response);
+            }
+            catch (UnauthorizedAccessException ex)
+            {
+                return Unauthorized(new { error = ex.Message });
+            }
         }
-
     }
 }
