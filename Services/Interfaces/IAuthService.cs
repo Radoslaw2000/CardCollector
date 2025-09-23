@@ -10,25 +10,20 @@ namespace CardCollector.Services.Interfaces
     public interface IAuthService
     {
         /// <summary>
-        /// Registers a new user with a hashed password.
+        /// Registers a new user with the provided registration details.
         /// </summary>
-        /// <param name="request">The registration request containing username, email, and password.</param>
-        /// <returns>The created user entity.</returns>
-        /// <exception cref="InvalidOperationException">
-        /// Thrown when the username or email already exists in the database.
-        /// </exception>
-        User Register(RegisterRequestDto request);
+        /// <param name="request">The registration details for the new user, including necessary information such as username, password, and
+        /// email.</param>
+        /// <returns>A task that represents the asynchronous registration operation.</returns>
+        Task RegisterAsync(RegisterRequestDto request);
 
         /// <summary>
-        /// Authenticates a user by verifying the provided credentials.
-        /// Generates both access and refresh tokens if successful.
+        /// Authenticates a user based on the provided login request.
         /// </summary>
-        /// <param name="request">The login request containing (username or email) and password.</param>
-        /// <returns>
-        /// A <see cref="LoginResponseDto"/> containing user ID, access token, and refresh token.
-        /// </returns>
-        /// <exception cref="UnauthorizedAccessException">Thrown when the credentials are invalid.</exception>
-        LoginResponseDto Login(LoginRequestDto request);
+        /// <param name="request">The login request containing user credentials.</param>
+        /// <returns>A task representing the asynchronous operation. The task result contains a <see cref="LoginResponseDto"/>
+        /// with the authentication result and user details.</returns>
+        Task<LoginResponseDto> LoginAsync(LoginRequestDto request);
 
     }
 }

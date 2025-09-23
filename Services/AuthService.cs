@@ -1,26 +1,29 @@
 ﻿using CardCollector.Data;
 using CardCollector.DTOs.Auth;
 using CardCollector.Models;
+using CardCollector.Repositories.Interfaces;
 using CardCollector.Services.Interfaces;
 
 namespace CardCollector.Services
 {
     public class AuthService : IAuthService
     {
-        private readonly ApplicationDbContext _dbContext;
         private readonly ITokenService _tokenService;
+        private readonly IRefreshTokenRepository _refreshTokenRepository;
+        private readonly IUserRepository _userRepository;
 
-        public AuthService(ApplicationDbContext context, ITokenService tokenservice)
+        public AuthService(ITokenService tokenservice, IRefreshTokenRepository refreshTokenRepository, IUserRepository userRepository)
         {
-            _dbContext = context;
             _tokenService = tokenservice;
+            _refreshTokenRepository = refreshTokenRepository;
+            _userRepository = userRepository;
         }
 
-        public User Register(RegisterRequestDto request)
+        public async Task RegisterAsync(RegisterRequestDto request)
         {
-            if (_dbContext.Users.Any(u => u.Username == request.Username))
+            if(await _userRepository.UsernameExistAsync(request.Username))
                 throw new InvalidOperationException("Username already exists.");
-            if (_dbContext.Users.Any(u => u.Email == request.Email))
+            if(await _userRepository.EmailExistAsync(request.Email))
                 throw new InvalidOperationException("Email already exists.");
 
             var user = new User
@@ -30,16 +33,12 @@ namespace CardCollector.Services
                 Password = BCrypt.Net.BCrypt.HashPassword(request.Password)
             };
 
-            _dbContext.Users.Add(user);
-            _dbContext.SaveChanges();
-
-            return user;
+            await _userRepository.AddAsync(user);
         }
 
-        public LoginResponseDto Login(LoginRequestDto request)
+        public async Task<LoginResponseDto> LoginAsync(LoginRequestDto request)
         {
-            var user = _dbContext.Users.FirstOrDefault(u =>
-                u.Username == request.UsernameOrEmail || u.Email == request.UsernameOrEmail);
+            var user = _userRepository.GetByUsernameOrEmailAsync(request.UsernameOrEmail).Result;
 
             if (user == null)
                 throw new UnauthorizedAccessException("User does not exist.");
@@ -47,27 +46,19 @@ namespace CardCollector.Services
             if (!BCrypt.Net.BCrypt.Verify(request.Password, user.Password))
                 throw new UnauthorizedAccessException("Invalid password.");
 
-            // Revoke old refresh tokens
-            var oldTokens = _dbContext.RefreshTokens.Where(rt => rt.UserId == user.UserId && !rt.IsRevoked);
-            foreach (var token in oldTokens)
-            {
-                token.IsRevoked = true;
-            }
-
-            // Generate tokens
             var accessToken = _tokenService.GenerateAccessToken(user);
             var refreshToken = _tokenService.GenerateRefreshToken(user.UserId);
 
-            // Save refresh token in DB
-            _dbContext.RefreshTokens.Add(refreshToken);
-            _dbContext.SaveChanges();
+            await _refreshTokenRepository.AddAsync(refreshToken);
 
-            return new LoginResponseDto
+            var loginResponse = new LoginResponseDto
             {
                 UserId = user.UserId,
                 AccessToken = accessToken,
                 RefreshToken = refreshToken.Token.ToString()
             };
+
+            return loginResponse;
         }
     }
 }
