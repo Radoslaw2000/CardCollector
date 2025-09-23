@@ -5,6 +5,8 @@ using CardCollector.Services.Interfaces;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
+using CardCollector.Repositories.Interfaces;
+using CardCollector.Repositories;
 
 namespace CardCollector
 {
@@ -24,6 +26,10 @@ namespace CardCollector
             // DbContext
             builder.Services.AddDbContext<ApplicationDbContext>(options => 
                 options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+
+            // Repositories
+            builder.Services.AddScoped<IUserRepository, UserRepository>();
+            builder.Services.AddScoped<IRefreshTokenRepository, RefreshTokenRepository>();
 
             // Services
             builder.Services.AddScoped<ITokenService, TokenService>();
