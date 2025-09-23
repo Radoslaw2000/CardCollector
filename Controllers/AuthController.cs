@@ -1,11 +1,10 @@
 ﻿using CardCollector.DTOs.Auth;
-using CardCollector.Services;
 using CardCollector.Services.Interfaces;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace CardCollector.Controllers
 {
+    [ApiController]
     [Route("api/[controller]")]
     public class AuthController : ControllerBase
     {
@@ -17,26 +16,25 @@ namespace CardCollector.Controllers
         }
 
         [HttpPost("register")]
-        public IActionResult Register([FromBody] RegisterRequestDto request)
+        public async Task<IActionResult> Register([FromBody] RegisterRequestDto request)
         {
             try
             {
-                var user = _authService.Register(request);
-                return Ok(new { message = "User registered successfully", userId = user.UserId });
+                await _authService.RegisterAsync(request);
+                return Ok(new { message = "User registered successfully"});
             }
             catch (InvalidOperationException ex)
             {
-                return BadRequest(new { error = "xdddddddddd" + ex.Message });
+                return BadRequest(new { error = ex.Message });
             }
         }
 
         [HttpPost("login")]
-        [AllowAnonymous]
-        public IActionResult Login([FromBody] LoginRequestDto request)
+        public async Task<IActionResult> Login([FromBody] LoginRequestDto request)
         {
             try
             {
-                var response = _authService.Login(request);
+                var response = await _authService.LoginAsync(request);
                 return Ok(response);
             }
             catch (UnauthorizedAccessException ex)
