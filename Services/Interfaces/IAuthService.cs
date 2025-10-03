@@ -25,5 +25,12 @@ namespace CardCollector.Services.Interfaces
         /// with the authentication result and user details.</returns>
         Task<LoginResponseDto> LoginAsync(LoginRequestDto request);
 
+        /// <summary>
+        /// Logs out a user by invalidating their refresh token.
+        /// </summary>
+        /// <param name="logoutDto"></param>
+        /// <returns></returns>
+        Task LogoutAsync(LogoutDto logoutDto);
+
     }
 }

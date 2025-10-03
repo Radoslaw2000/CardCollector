@@ -1,5 +1,6 @@
 ﻿using CardCollector.DTOs.Auth;
 using CardCollector.Services.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace CardCollector.Controllers
@@ -41,6 +42,14 @@ namespace CardCollector.Controllers
             {
                 return Unauthorized(new { error = ex.Message });
             }
+        }
+
+        [HttpPost("logout")]
+        [Authorize]
+        public async Task<IActionResult> Logout([FromBody] LogoutDto logoutDto)
+        {
+            await _authService.LogoutAsync(logoutDto);
+            return Ok(new { message = "User logged out successfully" });
         }
     }
 }

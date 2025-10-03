@@ -60,5 +60,10 @@ namespace CardCollector.Services
 
             return loginResponse;
         }
+
+        public async Task LogoutAsync(LogoutDto logoutDto)
+        {
+            await _refreshTokenRepository.RevokeRefreshTokenAsync(logoutDto.RefreshToken);
+        }
     }
 }

@@ -30,13 +30,13 @@ namespace CardCollector.Repositories
                 .ToListAsync();
         }
 
-        public async Task RevokeRefreshTokenByIdAsync(Guid refreshTokenId)
+        public async Task RevokeRefreshTokenAsync(Guid refreshToken)
         {
-            var refreshToken = await _dbContext.RefreshTokens.FirstOrDefaultAsync(rt => rt.Token == refreshTokenId);
-            if (refreshToken == null)
+            var refreshTokenResult = await _dbContext.RefreshTokens.FirstOrDefaultAsync(rt => rt.Token == refreshToken);
+            if (refreshTokenResult == null)
                 throw new InvalidOperationException("RefreshToken not found.");
 
-            refreshToken.IsRevoked = true;
+            refreshTokenResult.IsRevoked = true;
             await _dbContext.SaveChangesAsync();
         }
 
