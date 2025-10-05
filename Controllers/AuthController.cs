@@ -51,5 +51,19 @@ namespace CardCollector.Controllers
             await _authService.LogoutAsync(logoutDto);
             return Ok(new { message = "User logged out successfully" });
         }
+
+        [HttpPost("refresh-token")]
+        public async Task<IActionResult> RefreshToken([FromBody] RefreshTokenRequestDto request)
+        {
+            try
+            {
+                var response = await _authService.RefreshTokenAsync(request);
+                return Ok(response);
+            }
+            catch (UnauthorizedAccessException ex)
+            {
+                return Unauthorized(new { error = ex.Message });
+            }
+        }
     }
 }

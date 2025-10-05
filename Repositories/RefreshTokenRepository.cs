@@ -20,6 +20,16 @@ namespace CardCollector.Repositories
             await _dbContext.SaveChangesAsync();
         }
 
+        public async Task<RefreshToken> GetAsync(string refreshToken)
+        {
+            var refreshTokenResult = await _dbContext.RefreshTokens
+                .Include(rt => rt.User)
+                .FirstOrDefaultAsync(rt => rt.Token == refreshToken);
+            if (refreshTokenResult == null)
+                throw new InvalidOperationException("RefreshToken not found.");
+            return refreshTokenResult;
+        }
+
         public async Task<IEnumerable<RefreshToken>> GetActiveRefreshTokensByUserIdAsync(Guid userId)
         {
             return await _dbContext.RefreshTokens

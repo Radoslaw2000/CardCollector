@@ -22,8 +22,8 @@ namespace CardCollector.Services.Interfaces
         /// </summary>
         /// <param name="userId">The unique identifier of the user.</param>
         /// <returns>
-        /// A new <see cref="RefreshToken"/> instance.
+        /// A string representing the newly generated refresh token.
         /// </returns>
-        public RefreshToken GenerateRefreshToken(Guid userId);
+        public string GenerateRefreshToken(Guid userId);
     }
 }

@@ -49,13 +49,21 @@ namespace CardCollector.Services
             var accessToken = _tokenService.GenerateAccessToken(user);
             var refreshToken = _tokenService.GenerateRefreshToken(user.UserId);
 
-            await _refreshTokenRepository.AddAsync(refreshToken);
+            var refreshTokenEntity = new RefreshToken
+            {
+                Token = refreshToken,
+                UserId = user.UserId,
+                ExpiryDate = DateTime.UtcNow.AddDays(7),
+                IsRevoked = false
+            };
+
+            await _refreshTokenRepository.AddAsync(refreshTokenEntity);
 
             var loginResponse = new LoginResponseDto
             {
                 UserId = user.UserId,
                 AccessToken = accessToken,
-                RefreshToken = refreshToken.Token.ToString()
+                RefreshToken = refreshToken
             };
 
             return loginResponse;
@@ -64,6 +72,37 @@ namespace CardCollector.Services
         public async Task LogoutAsync(LogoutDto logoutDto)
         {
             await _refreshTokenRepository.RevokeRefreshTokenAsync(logoutDto.RefreshToken);
+        }
+
+        public async Task<RefreshTokenResponseDto> RefreshTokenAsync(RefreshTokenRequestDto request)
+        {
+            var refreshToken = _refreshTokenRepository.GetAsync(request.RefreshToken).Result;
+
+            if (refreshToken == null || refreshToken.IsRevoked || refreshToken.ExpiryDate <= DateTime.UtcNow)
+                throw new UnauthorizedAccessException("Invalid or expired refresh token.");
+
+            var newAccessToken = _tokenService.GenerateAccessToken(refreshToken.User);
+            var newRefreshToken = _tokenService.GenerateRefreshToken(refreshToken.UserId);
+
+            var refreshTokenEntity = new RefreshToken
+            {
+                Token = newRefreshToken,
+                UserId = refreshToken.UserId,
+                ExpiryDate = DateTime.UtcNow.AddDays(7),
+                IsRevoked = false
+            };
+
+            await _refreshTokenRepository.AddAsync(refreshTokenEntity);
+            await _refreshTokenRepository.RevokeRefreshTokenAsync(refreshToken.Token);
+
+            var refreshTokenResponse = new RefreshTokenResponseDto
+            {
+                AccessToken = newAccessToken,
+                RefreshToken = newRefreshToken
+            };
+
+            return refreshTokenResponse;
+
         }
     }
 }

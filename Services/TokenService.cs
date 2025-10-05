@@ -41,15 +41,9 @@ namespace CardCollector.Services
             return new JwtSecurityTokenHandler().WriteToken(token);
         }
 
-        public RefreshToken GenerateRefreshToken(Guid userId)
+        public string GenerateRefreshToken(Guid userId)
         {
-            return new RefreshToken
-            {
-                UserId = userId,
-                Token = Convert.ToBase64String(RandomNumberGenerator.GetBytes(64)),
-                ExpiryDate = DateTime.UtcNow.AddDays(3),
-                IsRevoked = false
-            };
+            return Convert.ToBase64String(RandomNumberGenerator.GetBytes(64));
         }
     }
 }

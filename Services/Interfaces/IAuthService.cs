@@ -32,5 +32,11 @@ namespace CardCollector.Services.Interfaces
         /// <returns></returns>
         Task LogoutAsync(LogoutDto logoutDto);
 
+        /// <summary>
+        /// Refreshes the access token using the provided refresh token.
+        /// </summary>
+        /// <param name="request">The login response containing the current refresh token.</param>
+        Task<RefreshTokenResponseDto> RefreshTokenAsync(RefreshTokenRequestDto request);
+
     }
 }
