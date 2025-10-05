@@ -33,7 +33,7 @@ namespace CardCollector.Services
                 issuer: _configuration["Jwt:Issuer"],
                 audience: _configuration["Jwt:Audience"],
                 claims: claims,
-                expires: DateTime.UtcNow.AddHours(3),
+                expires: DateTime.UtcNow.AddMinutes(_configuration.GetValue<int>("Jwt:EpirationInMinutes")),
                 signingCredentials: creds
             );
 
