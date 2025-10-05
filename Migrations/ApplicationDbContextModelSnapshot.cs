@@ -100,8 +100,9 @@ namespace CardCollector.Migrations
                     b.Property<bool>("IsRevoked")
                         .HasColumnType("bit");
 
-                    b.Property<Guid>("Token")
-                        .HasColumnType("uniqueidentifier");
+                    b.Property<string>("Token")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<Guid>("UserId")
                         .HasColumnType("uniqueidentifier");

@@ -6,7 +6,7 @@ namespace CardCollector.Repositories.Interfaces
     {
         Task AddAsync(RefreshToken refreshToken);
         Task<IEnumerable<RefreshToken>> GetActiveRefreshTokensByUserIdAsync(Guid userId);
-        Task RevokeRefreshTokenAsync(Guid refreshToken);
+        Task RevokeRefreshTokenAsync(string refreshToken);
         Task SaveChangesAsync();
     }
 }

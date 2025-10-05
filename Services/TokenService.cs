@@ -1,9 +1,10 @@
-﻿using System.IdentityModel.Tokens.Jwt;
-using System.Security.Claims;
-using System.Text;
-using CardCollector.Models;
+﻿using CardCollector.Models;
 using CardCollector.Services.Interfaces;
 using Microsoft.IdentityModel.Tokens;
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
+using System.Security.Cryptography;
+using System.Text;
 
 namespace CardCollector.Services
 {
@@ -45,7 +46,7 @@ namespace CardCollector.Services
             return new RefreshToken
             {
                 UserId = userId,
-                Token = Guid.NewGuid(),
+                Token = Convert.ToBase64String(RandomNumberGenerator.GetBytes(64)),
                 ExpiryDate = DateTime.UtcNow.AddDays(3),
                 IsRevoked = false
             };

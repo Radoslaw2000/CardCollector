@@ -30,7 +30,7 @@ namespace CardCollector.Repositories
                 .ToListAsync();
         }
 
-        public async Task RevokeRefreshTokenAsync(Guid refreshToken)
+        public async Task RevokeRefreshTokenAsync(string refreshToken)
         {
             var refreshTokenResult = await _dbContext.RefreshTokens.FirstOrDefaultAsync(rt => rt.Token == refreshToken);
             if (refreshTokenResult == null)
